@@ -61,7 +61,12 @@ def _expand_and_check(path_value, name, parent=False, is_file=False, is_dir=Fals
     expanded = os.path.expandvars(path_value)
 
     if "$" in expanded:
-        missing = re.findall(r"\$([A-Za-z_][A-Za-z0-9_]*)", expanded)[0]
+        # Attempt to extract the missing variable name from either $VAR or ${VAR}
+        match = re.search(r"\$(?:{([A-Za-z_][A-Za-z0-9_]*)}|([A-Za-z_][A-Za-z0-9_]*))",
+                          path_value)
+        missing = ""
+        if match:
+            missing = match.group(1) or match.group(2)
         raise EnvironmentError(
             f"Environment variable '{missing}' required for '{name}' is not set"
         )
