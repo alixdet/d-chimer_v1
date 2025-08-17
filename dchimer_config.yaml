@@ -1,26 +1,67 @@
-blastn_parameters :
-  dbpath_nt : /path/to/nt/nt
-  nb_threads_bn : 28
-  evalue_nt : 0.01
+---
+# D‑Chimer configuration file
+# ---------------------------
+# Update the paths and parameters below to match your environment.
+# All paths should be absolute.  Comments describe the purpose of
+# each field to make the file easier to review and maintain.
 
-filter_blastn_parameters :
- d : 10
- l : 50
- I : 1
+blastn_parameters:
+  # Path to the nucleotide database used by BLASTn.
+  # Uses the BLAST_DB_NT environment variable if set.
+  dbpath_nt: "${BLAST_DB_NT}"
 
-blastx_parameters :
-  dbpath_vrl : /path/to/virnr/viruses_nr_prots.100p.faa
-  dbpath_nr : /path/to/nr/nr
-  nb_threads_bx : 28
-  evalue_vir : 0.1
-  evalue_nr : 0.01
+  # Number of threads to allocate to BLASTn.
+  nb_threads_bn: 28
 
-filter_blastx_parameters :
-  d : 10
-  l : 17
-  I : 1
+  # E-value threshold for BLASTn searches.
+  evalue_nt: 0.01
 
-add_taxo_parameters :
-  tax_lineages_file : /path/to/taxdump/fullnamelineage_taxid_sorted.dmp
+filter_blastn_parameters:
+  # Shift parameter for the BLASTn filter.
+  d: 10
 
-blast_path : /path/to/ncbi-blast-2.12.0+/bin
+  # Minimum alignment length allowed.
+  l: 50
+
+  # Identifier used to track recursive cycles.
+  I: 1
+
+blastx_parameters:
+  # Path to the viral proteins database.
+  # Uses the BLAST_DB_VRL environment variable if set.
+  dbpath_vrl: "${BLAST_DB_VRL}"
+
+  # Path to the non‑redundant protein database.
+  # Uses the BLAST_DB_NR environment variable if set.
+  dbpath_nr: "${BLAST_DB_NR}"
+
+  # Number of threads to allocate to BLASTx.
+  nb_threads_bx: 28
+
+  # E-value threshold for searches against the viral database.
+  evalue_vir: 0.1
+
+  # E-value threshold for searches against the nr database.
+  evalue_nr: 0.01
+
+filter_blastx_parameters:
+  # Shift parameter for the BLASTx filter.
+  d: 10
+
+  # Minimum alignment length allowed.
+  l: 17
+
+  # Identifier used to track recursive cycles.
+  I: 1
+
+add_taxo_parameters:
+  # Full path to taxonomy lineages file (fullnamelineage_taxid_sorted.dmp).
+  # Uses the TAX_LINEAGES_FILE environment variable if set.
+  tax_lineages_file: "${TAX_LINEAGES_FILE}"
+
+# Directory containing the BLAST+ executables. If BLAST+ is available on
+# your PATH, you can leave this variable empty. It also supports the
+# BLAST_BIN_PATH environment variable.
+blast_path: "${BLAST_BIN_PATH}"
+
+...
