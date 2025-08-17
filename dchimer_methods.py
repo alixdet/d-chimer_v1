@@ -41,8 +41,47 @@ import CsvIO
 path = os.path.dirname(os.path.abspath(__file__))
 config = yaml.safe_load(open(path+"/dchimer_config.yaml"))
 
+# Expand and validate environment-based paths
+def _expand_and_check(path_value, name, parent=False, is_file=False, is_dir=False):
+    """Expand environment variables and ensure the path exists.
+
+    Parameters
+    ----------
+    path_value : str
+        The path string possibly containing environment variables.
+    name : str
+        Name of the parameter for error messages.
+    parent : bool
+        If True, check existence of the parent directory of the expanded path.
+    is_file : bool
+        If True, require the path to be a file.
+    is_dir : bool
+        If True, require the path to be a directory.
+    """
+    expanded = os.path.expandvars(path_value)
+
+    if "$" in expanded:
+        missing = re.findall(r"\$([A-Za-z_][A-Za-z0-9_]*)", expanded)[0]
+        raise EnvironmentError(
+            f"Environment variable '{missing}' required for '{name}' is not set"
+        )
+
+    check_path = os.path.dirname(expanded) if parent else expanded
+
+    if expanded:
+        if is_file and not os.path.isfile(check_path):
+            raise FileNotFoundError(f"File for '{name}' does not exist: {expanded}")
+        elif is_dir and not os.path.isdir(check_path):
+            raise FileNotFoundError(f"Directory for '{name}' does not exist: {expanded}")
+        elif not is_file and not is_dir and not (os.path.isfile(check_path) or os.path.isdir(check_path)):
+            raise FileNotFoundError(f"Path for '{name}' does not exist: {expanded}")
+
+    return expanded
+
 # BLASTn and nt database parameters
-ntdbpath = config['blastn_parameters']['dbpath_nt']
+ntdbpath = _expand_and_check(
+    config['blastn_parameters']['dbpath_nt'], 'ntdbpath', parent=True
+)
 nb_threads_bn = config['blastn_parameters']['nb_threads_bn']
 evalue_nt = config['blastn_parameters']['evalue_nt']
 
@@ -51,8 +90,12 @@ filter_d_bn = config['filter_blastn_parameters']['d']
 filter_l_bn = config['filter_blastn_parameters']['l']
 
 # BLASTx parameters
-vdbpath = config['blastx_parameters']['dbpath_vrl']
-nrdbpath = config['blastx_parameters']['dbpath_nr']
+vdbpath = _expand_and_check(
+    config['blastx_parameters']['dbpath_vrl'], 'vdbpath', parent=True
+)
+nrdbpath = _expand_and_check(
+    config['blastx_parameters']['dbpath_nr'], 'nrdbpath', parent=True
+)
 nb_threads_bx = config['blastx_parameters']['nb_threads_bx']
 evalue_vir = config['blastx_parameters']['evalue_vir']
 evalue_nr = config['blastx_parameters']['evalue_nr']
@@ -62,9 +105,15 @@ filter_d_bx = config['filter_blastx_parameters']['d']
 filter_l_bx = config['filter_blastx_parameters']['l']
 
 # taxa lineages file : taxids with fullpaths
-taxlineages = config['add_taxo_parameters']['tax_lineages_file']
+taxlineages = _expand_and_check(
+    config['add_taxo_parameters']['tax_lineages_file'], 'taxlineages', is_file=True
+)
 
-blast_path = config['blast_path']
+blast_path = (
+    _expand_and_check(config['blast_path'], 'blast_path', is_dir=True)
+    if config['blast_path']
+    else ''
+)
 
 
 def runblast(program, local, qfile, db, evalue, outcsv):
