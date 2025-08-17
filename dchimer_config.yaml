@@ -21,6 +21,6 @@ filter_blastx_parameters :
   I : 1
 
 add_taxo_parameters :
-  tax_lineages_file : /home/path/to/fullnamelineage_taxid_sorted.dmp
+  tax_lineages_file : /path/to/taxdump/fullnamelineage_taxid_sorted.dmp
 
 blast_path : /path/to/ncbi-blast-2.12.0+/bin
