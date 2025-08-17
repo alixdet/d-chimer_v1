@@ -1,0 +1,4 @@
+# Ignore taxonomy dump and intermediate files
+taxdump/
+*.tar.gz
+*.dmp

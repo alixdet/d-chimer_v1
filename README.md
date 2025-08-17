@@ -103,7 +103,9 @@ d-chimer produces all the outputs in the repository where it was launched.
 
 
 ## 3. Installation
-Users can execute the `INSTALL.sh` bash script once this repo is cloned, to get d-chimer source code, the python libraries and custom data.
+Users can execute the `install.sh` bash script once this repo is cloned, to get d-chimer source code, the python libraries and custom data.
+The script installs dependencies in the currently active Python environment (compatible with a conda env) and
+downloads the NCBI taxonomy dump into a dedicated `taxdump/` directory while cleaning up temporary files.
 ### 3.1 d-chimer code and python libraries : 
 - Clone or download the d-chimer repository.   
 
@@ -134,13 +136,13 @@ It is available at https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_tax
     
  - Decompress it using, for example: 
     
-       tar xzf new_taxdump.tar.gz
-       
+       tar xzf new_taxdump.tar.gz -C taxdump fullnamelineage.dmp
+
  - Create a tab delimited taxo file :
- 
- The command used here reformats the original NCBI `fullnamelineage.dmp` file into a `taxid sorted` tabulated file, named `fullnamelineage_taxid_sorted.dmp`.
- 
-        cat fullnamelineage.dmp|sed "s/\s\+\|\s\+//g"|sed 's/\|//2g'|awk 'BEGIN{FS="|"}{print $1,$3,$4,$2}'|sed "s/\s/\t/g"|sort -k1,1 > fullnamelineage_taxid_sorted.dmp
+
+ The command used here reformats the original NCBI `fullnamelineage.dmp` file into a `taxid sorted` tabulated file, named `fullnamelineage_taxid_sorted.dmp`, stored under `taxdump/`.
+
+        cat taxdump/fullnamelineage.dmp|sed "s/\s\+|\s\+//g"|sed 's/\|//2g'|awk 'BEGIN{FS="|"}{print $1,$3,$4,$2}'|sed "s/\s/\t/g"|sort -k1,1 > taxdump/fullnamelineage_taxid_sorted.dmp
 
 #### 3.2.2 custom viral database.
 Using the ncbi nr database directly were too long for BLASTx searche, we used a custom database for the BLASTx version. 
@@ -192,7 +194,7 @@ Once the zip file downloaded and decompressed, users must specify its path in th
           I : 1
 
         add_taxo_parameters :
-          tax_lineages_file : /home/user/db/fullnamelineage_taxid_sorted.dmp
+          tax_lineages_file : /path/to/taxdump/fullnamelineage_taxid_sorted.dmp
          
           blast_path : /home/user/tools/ncbi-blast-2.12.0+/bin
 
