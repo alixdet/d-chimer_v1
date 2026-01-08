@@ -103,8 +103,48 @@ d-chimer produces all the outputs in the repository where it was launched.
 
 
 ## 3. Installation
+### 3.1 Installation (recommended)
+Conda is the recommended and supported installation method for reproducible environments.
+
+1. Clone or download the d-chimer repository:
+
+             git clone https://github.com/stirera/d-chimer_v1
+
+2. Create and activate the conda environment:
+
+   ```bash
+   conda env create -f environment.yml
+   conda activate dchimer
+   ```
+
+### 3.2 NCBI taxonomy data (manual step)
+d-chimer requires the taxonomic full lineage paths to complete its run correctly (see section 5.4). Download and prepare this data manually, then place the resulting file somewhere persistent (for example `~/db/taxonomy/`) and reference it from `d-chimer_config.yaml`.
+
+1. Download the taxonomy dump:
+
+   ```bash
+   wget "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
+   ```
+
+2. Decompress it:
+
+   ```bash
+   tar xzf new_taxdump.tar.gz
+   ```
+
+3. Create the tab-delimited file used by d-chimer:
+
+   ```bash
+   cat fullnamelineage.dmp|sed "s/\\s\\+\\|\\s\\+//g"|sed 's/\\|//2g'|awk 'BEGIN{FS="|"}{print $1,$3,$4,$2}'|sed "s/\\s/\\t/g"|sort -k1,1 > fullnamelineage_taxid_sorted.dmp
+   ```
+
+4. Move `fullnamelineage_taxid_sorted.dmp` to your chosen location and set `add_taxo_parameters.tax_lineages_file` in `d-chimer_config.yaml` to the full path.
+
+### 3.3 Legacy installation (deprecated)
+The legacy `INSTALL.sh` script is deprecated. It remains for historical reference, but the conda environment above is the recommended and supported method.
+
 Users can execute the `INSTALL.sh` bash script once this repo is cloned, to get d-chimer source code, the python libraries and custom data.
-### 3.1 d-chimer code and python libraries : 
+#### 3.3.1 d-chimer code and python libraries : 
 - Clone or download the d-chimer repository.   
 
              git clone https://github.com/stirera/d-chimer_v1
@@ -121,8 +161,8 @@ d-chimer depends on several python3 libraries and ncbi-BLAST and databases.
 
             pip install PyYAML
 
-### 3.2 **d-chimer custom data :**
-#### 3.2.1 taxonomic lineages :
+#### 3.3.2 **d-chimer custom data :**
+##### 3.3.2.1 taxonomic lineages :
 The taxonomic full lineage paths are needed for d-chimer to complete its run correctly ***** see also section 5.4 below fo details.*****
 It is available at https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz
 
@@ -140,9 +180,9 @@ It is available at https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_tax
  
  The command used here reformats the original NCBI `fullnamelineage.dmp` file into a `taxid sorted` tabulated file, named `fullnamelineage_taxid_sorted.dmp`.
  
-        cat fullnamelineage.dmp|sed "s/\s\+\|\s\+//g"|sed 's/\|//2g'|awk 'BEGIN{FS="|"}{print $1,$3,$4,$2}'|sed "s/\s/\t/g"|sort -k1,1 > fullnamelineage_taxid_sorted.dmp
+        cat fullnamelineage.dmp|sed "s/\\s\\+\\|\\s\\+//g"|sed 's/\\|//2g'|awk 'BEGIN{FS="|"}{print $1,$3,$4,$2}'|sed "s/\\s/\\t/g"|sort -k1,1 > fullnamelineage_taxid_sorted.dmp
 
-#### 3.2.2 custom viral database.
+##### 3.3.2.2 custom viral database.
 Using the ncbi nr database directly were too long for BLASTx searche, we used a custom database for the BLASTx version. 
 It is made by downloading all proteing sequences in ncbi nr protein database.
 The produced fasta file was deduplicated using cd-hit (http://weizhong-lab.ucsd.edu/cd-hit/ or https://github.com/weizhongli/cdhit). 

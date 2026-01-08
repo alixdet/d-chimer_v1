@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+# DEPRECATED: use conda environment.yml for reproducible installation
 
 pip3 install biopython
 pip3 install PyYAML
