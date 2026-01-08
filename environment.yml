@@ -3,11 +3,5 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - python=3.10
-  - biopython=1.81
-  - pyyaml=6.0
-  - ncbi-blast=2.13.0
-  - gnu-sed=4.9
-  - gawk=5.2.2
-  - coreutils=9.3
-  - wget=1.21.4
+  - biopython>1.81
+  - blast>2.14
