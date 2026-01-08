@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPRECATED: use conda environment.yml for reproducible installation
 set -euo pipefail
 
 # Install Python dependencies into the active environment
