@@ -1,0 +1,8 @@
+# NCBI taxonomy dumps
+*.dmp
+*.tar.gz
+
+# Python bytecode
+__pycache__/
+*.pyc
+
