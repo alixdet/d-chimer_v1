@@ -29,7 +29,6 @@ import datetime
 import shutil
 import subprocess
 import yaml
-import re
 import logging
 
 from Bio import SeqIO
@@ -155,8 +154,8 @@ def extract_idLists_fromFasta(seqlist, fasta, listfasta):
         fastadict = SeqIO.to_dict(SeqIO.parse(fastafh, "fasta"))
 
         for line in listfh:
-            k = re.sub('\n', '', line)
-            k2 = re.sub('^', '>', fastadict[k].id)
+            k = line.strip()
+            k2 = '>' + fastadict[k].id
             outfastah.write(k2+"\n")
             outfastah.write(str(fastadict[k].seq)+"\n")
 
