@@ -87,7 +87,7 @@ class TestValidateFastaSequences:
         """Test error handling for invalid amino acid characters."""
         fasta_file = os.path.join(temp_dir, "invalid_aa.fasta")
         with open(fasta_file, "w") as f:
-            f.write(">prot1\nATGC\n")  # Nucleotides instead of amino acids
+            f.write(">prot1\nMVK2LAS\n")  # '2' is not a valid amino acid or nucleotide
         
         with pytest.raises(ValueError, match="Invalid character"):
             validate_fasta_sequences(fasta_file, program='blastx')

@@ -21,7 +21,7 @@ ATGCATGCATGCATGC
 >seq2
 GCTAGCTAGCTAGCTA
 >seq3
-ATAT"""
+AT"""
     
     fasta_path = os.path.join(temp_dir, "sample.fasta")
     with open(fasta_path, "w") as f:

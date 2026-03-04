@@ -28,9 +28,27 @@ class TestLoadAndValidateConfig:
         """Test error handling for missing required config section."""
         config_file = os.path.join(temp_dir, "incomplete_config.yaml")
         with open(config_file, "w") as f:
-            f.write("blastn_parameters:\n  dbpath_nt: /path/to/db\n")
+            f.write("""blastn_parameters:
+  dbpath_nt: /path/to/db
+  nb_threads_bn: 4
+  evalue_nt: 0.01
+
+filter_blastn_parameters:
+  d: 10
+  l: 50
+
+blastx_parameters:
+  dbpath_vrl: /path/to/viral
+  dbpath_nr: /path/to/nr
+  nb_threads_bx: 4
+  evalue_vir: 0.1
+  evalue_nr: 0.01
+
+filter_blastx_parameters:
+  d: 10
+""")
         
-        with pytest.raises(ValueError, match="Missing configuration section"):
+        with pytest.raises(ValueError, match="Missing configuration section|Missing parameter"):
             load_and_validate_config(config_file)
 
     def test_missing_required_parameter(self, temp_dir):

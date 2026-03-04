@@ -9,7 +9,6 @@ Validates FASTA input files before processing.
 
 import os
 from Bio import SeqIO
-from Bio.SeqIO.FastaIO import FastaParseError
 
 
 def validate_fasta_file(fasta_path):
@@ -54,7 +53,7 @@ def validate_fasta_file(fasta_path):
 
         return num_sequences, file_size / 1024  # Return size in KB
 
-    except FastaParseError as e:
+    except (ValueError, Exception) as e:
         raise ValueError(
             f"Invalid FASTA format in {fasta_path}: {e}"
         )
@@ -89,7 +88,7 @@ def validate_fasta_sequences(fasta_path, program='blastn'):
     # Valid nucleotides (BLASTN)
     valid_nucleotides = set('ATGCNatgcnWwSsMmKkRrYyBbDdHhVv')
     # Valid amino acids (BLASTX)
-    valid_amino_acids = set('ACDEFGHIKLMNPQSTVWY*acdefghiklmnpqstvwy')
+    valid_amino_acids = set('ACDEFGHIKLMNPQRSTVWY*acdefghiklmnpqrstvwy')
 
     valid_chars = valid_nucleotides if program == 'blastn' else valid_amino_acids
 
