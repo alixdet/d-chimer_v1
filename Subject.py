@@ -24,17 +24,49 @@ Author : Alix de Thoisy <alixdet@protonmail.com>
 
 
 class Subject():
-    """This Class juste registers the full line of
-    BLASTx output, except query/contig
-    identifiant, the first coulumn (bl[0])
+    """
+    Represent a single BLAST hit/match with alignment details.
+
+    This class parses and stores information about a single subject sequence match
+    from a BLAST output line. Handles both BLASTn (nucleotide) and BLASTx (protein)
+    output formats with appropriate field parsing and sense direction detection.
+
+    Attributes:
+        sacc: Subject sequence accession number
+        pident: Percent identity
+        length: Alignment length
+        mismatch: Number of mismatches
+        gaps: Number of gaps
+        qstart: Query sequence start coordinate
+        qend: Query sequence end coordinate
+        sstart: Subject sequence start coordinate
+        send: Subject sequence end coordinate
+        evalue: E-value of the match
+        bitscore: Bit score of the match
+        staxid: Subject taxonomy ID
+        sskingdom: Subject kingdom classification
+        qlen: Query sequence length
+        qseq: Query sequence alignment
+        sseq: Subject sequence alignment
+        sens: Strand/frame sense direction (True = forward, False = reverse)
+        sframe: Subject frame (BLASTx only)
+        qframe: Query frame (BLASTx only)
     """
 
     def __init__(self, bl, program):
-        """It is initialized by a BLASTx output line : bl[]
-        Here it is callend by CsvIO.next() method
+        """
+        Initialize a Subject from a BLAST output line.
+
+        Parses BLAST output columns according to the program type (BLASTn or BLASTx)
+        and determines sense direction for strand/frame orientation.
+
+        Args:
+            bl: List of BLAST output fields (tab-separated line split)
+            program: BLAST program type ('blastn' or 'blastx')
         """
         if program == 'blastx':
-
+            # For BLASTx, check qframe (column 15) to determine sense direction
+            # Negative frame indicates reverse strand
             if int(bl[15]) < 0:
                 self.sacc, self.pident, self.length, self.mismatch, \
                     self.gaps, self.qend, self.qstart, self.sstart, \
@@ -48,10 +80,11 @@ class Subject():
                     self.sstart, self.evalue, self.bitscore, self.staxid, \
                     self.sskingdom, self.sframe, self.qframe, self.qlen, \
                     self.qseq, self.sseq = bl[1:19]
-
                 self.sens = True
 
-        elif program == 'blastn' :
+        elif program == 'blastn':
+            # For BLASTn, compare sstart/send to determine sense direction
+            # If sstart > send, sequence is on reverse strand
             self.sacc, self.pident, self.length, \
                 self.mismatch, self.gaps, self.qstart, \
                 self.qend, self.sstart, self.send, \
