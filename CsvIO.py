@@ -21,8 +21,8 @@ Author : Jean-Marc Frigerio <jean-marc.frigerio@inrae.fr>
 Author : Alix de Thoisy <alixdet@protonmail.com>
 """
 
-import Contig
-import Subject
+from . import Contig
+from . import Subject
 
 
 class CsvIO():

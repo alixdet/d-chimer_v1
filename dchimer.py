@@ -25,7 +25,7 @@ Author : Alix de Thoisy <alixdet@protonmail.com>
 import os
 import sys
 
-from dchimer_methods import call_blastx_and_filter, call_blastn_and_filter
+from .dchimer_methods import call_blastx_and_filter, call_blastn_and_filter
 
 import argparse
 

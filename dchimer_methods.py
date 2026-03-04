@@ -34,7 +34,7 @@ import re
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastxCommandline,\
                                    NcbiblastnCommandline
-import CsvIO
+from . import CsvIO
 
 # End of imports
 
