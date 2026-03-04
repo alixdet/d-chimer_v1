@@ -40,6 +40,12 @@ setup(
     },
     python_requires='>=3.7',
     install_requires=install_requires,
+    extras_require={
+        'test': [
+            'pytest>=6.0',
+            'pytest-cov>=2.12',
+        ],
+    },
     entry_points={
         'console_scripts': [
             'dchimer=dchimer.dchimer:main',

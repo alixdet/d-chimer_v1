@@ -8,6 +8,5 @@ dependencies:
   - biopython>=1.81
   - blast>=2.14
   - pyyaml>=5.0
-  - pip
-  - pip:
-    - -e .
+  - pytest>=6.0
+  - pytest-cov>=2.12
