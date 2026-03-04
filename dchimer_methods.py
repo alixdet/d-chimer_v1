@@ -30,6 +30,7 @@ import shutil
 import subprocess
 import yaml
 import re
+import logging
 
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastxCommandline,\
@@ -37,6 +38,9 @@ from Bio.Blast.Applications import NcbiblastxCommandline,\
 from . import CsvIO
 
 # End of imports
+
+# Get logger for this module
+logger = logging.getLogger('dchimer.methods')
 
 path = os.path.dirname(os.path.abspath(__file__))
 config = yaml.safe_load(open(path+"/dchimer_config.yaml"))
@@ -265,33 +269,35 @@ def call_blastx_and_filter(program, local, qfile, cpt, cpt_max):
     vposqfile = root[0]+"."+str(cpt)+".bx.vir.fas"
     outcsv = root[0] + "." + str(cpt) + ".bx.csv"
 
-    print("BLASTx is running... on viral db")
+    logger.info("Starting BLASTx on viral database (cycle %d)", cpt)
 
     # Here is the BLASTx command on viral proteins database
     runblast(program, local, qfile, vdbpath, evalue_vir, outvircsv)
-    print("BLASTx finished running... on viral db")
+    logger.info("BLASTx completed on viral database")
 
     if os.stat(outvircsv).st_size == 0:
+        logger.error("No matches found in viral database: %s", outvircsv)
         taxo_postprocess(program, root, cpt, 1)
         sys.exit("empty file : " + outvircsv + "\nNoting to do !")
 
     # get contigs that matched the viral protein database
     gather_matchingSequences(outvircsv, qfile, vposqfile)
 
-    print("BLASTx is running... on NR db")
+    logger.info("Starting BLASTx on NR database (cycle %d)", cpt)
 
     # Here is the BLASTx command on nr database
     runblast(program, local, vposqfile, nrdbpath, evalue_nr, outcsv)
-    print("BLASTx finished running... on NR db")
+    logger.info("BLASTx completed on NR database")
 
-    print("Filtering the BLASTx outputs ...")
+    logger.info("Filtering BLASTx outputs (cycle %d)", cpt)
 
     filter_bx_output(vposqfile, outcsv, int(filter_d_bx),
                      int(filter_l_bx), str(cpt), program)
-    print("cycle number ", cpt, " completed")
+    logger.info("Cycle %d completed", cpt)
 
     if ((os.stat(root[0] + "." + str(cpt) + ".bx.fas").st_size == 0) or
        (cpt == cpt_max)):
+        logger.info("BLASTx pipeline completed (no uncovered zones or max cycles reached)")
         taxo_postprocess(program, root, cpt, 1)
         sys.exit("empty file or max number of cycles :" +
                  "\nNothing (more) to do !")
@@ -318,16 +324,17 @@ def call_blastn_and_filter(program, local, qfile, cpt, cpt_max):
     cpt += 1
     outcsv = root[0] + "." + str(cpt) + ".bn.csv"
 
-    print("BLASTn is running...")
+    logger.info("Starting BLASTn (cycle %d)", cpt)
     runblast(program, local, qfile, ntdbpath, evalue_nt, outcsv)
-    print("BLASTn finished running...")
+    logger.info("BLASTn completed")
 
-    print("Filtering the BLASTn outputs ...")
+    logger.info("Filtering BLASTn outputs (cycle %d)", cpt)
     filter_bn_output(qfile, outcsv, int(filter_d_bn), int(filter_l_bn), cpt, program)
-    print("cycle number ", cpt, " completed")
+    logger.info("Cycle %d completed", cpt)
 
     if ((os.stat(root[0] + "." + str(cpt) + ".bn.fas").st_size == 0) or
        (cpt == cpt_max)):
+        logger.info("BLASTn pipeline completed (no uncovered zones or max cycles reached)")
         taxo_postprocess(program, root, cpt, 1)
         sys.exit("empty file or max number of cycles :" +
                  "\nNothing (more) to do !")
