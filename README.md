@@ -17,26 +17,28 @@ In the the d-chimer publication, datasets were first submitted to d-chimer BLAST
 
 ## 1. Usage
  
-Once d-chimer is installed (see section 3 for installation) and the parameters configured (through the `d-chimer_config.yaml`file, section 4), it can be used as follow *:
+Once d-chimer is installed (see section 3 for installation) and the parameters configured (through the `dchimer_config.yaml` file, section 4), it can be used as follows:
 
-    python3 /path/to/d-chimer/dchimer.py  -p blastn -L True -f query_file.fasta
-or
+**BLASTn mode:**
+```bash
+dchimer -p blastn -L True -f query_file.fasta
+```
 
-    python3 /path/to/d-chimer/dchimer.py  -p blastx -L True -f query_file.fasta
-    
-\* We recommand users to execute d-chimer in the directory where they input data are. 
-    
+**BLASTx mode:**
+```bash
+dchimer -p blastx -L True -f query_file.fasta
+```
 
-By default, d-chimer runs in a recursive manner. The number of cycles can be limited by using the -m option. For example,  to limit d-chimer to two cycles :
+By default, d-chimer runs in a recursive manner. The number of cycles can be limited by using the `-m` option. For example, to limit d-chimer to two cycles:
 
-      python3 /path/to/d-chimer/dchimer.py  -p blastn -L True -f query_file.fasta -m 2
+```bash
+dchimer -p blastn -L True -f query_file.fasta -m 2
+```
 
+For a full view of d-chimer options:
 
-For full view of d-chimer options, type :
-
-
-
-      python3 /path/to/d-chimer/dchimer.py -h
+```bash
+dchimer -h
 
 
       usage: dchimer.py [-h] -p blastprogram -L True | False -f fastafile
@@ -59,10 +61,15 @@ For full view of d-chimer options, type :
                               fasta
 
 
-## 2.  Usage exemple with the provided input file "testSequences.fasta"
-### 2.1 run d-chimer blastn with the input file :
-      
-           python3 /path/to/d-chimer/dchimer.py -p blastn -L True -f testSequences.fasta
+## 2. Usage Example with testSequences.fasta
+
+A test FASTA file (`testSequences.fasta`) is provided in the repository for testing your installation.
+
+### 2.1 Run d-chimer with BLASTn
+
+```bash
+dchimer -p blastn -L True -f testSequences.fasta
+```
 
   for each cycle, will be written :
  - The blastn hits : *testSequences.1.bn.csv* (cycle 1 blastn hits).
@@ -91,63 +98,79 @@ For full view of d-chimer options, type :
    - query/subjects alignments : *testSequences.1.bn.filtered.aln*
    Its a three lines item with a description followed by two lines each representing the BLAST aligned sequence for contig and subject.
 
-### 2.2 run d-chimer blastx with the input file :
+### 2.2 Run d-chimer with BLASTx
 
-  A similar set of file are produced with blastx... everywhere "bn" is replaced by "bx". Additional intermediate files will be produced :
+```bash
+dchimer -p blastx -L True -f testSequences.fasta
+```
 
+BLASTx produces a similar set of output files with "bx" instead of "bn", plus additional intermediate files:
    - BLASTx against viral database output : *testSequences.bx.vir.csv*  
-   - List of matching sequences against the viral database : *test_1.1.bx.vir.list*
-   - Fasta file of sequneces matching the viral database : *testSequences.bx.vir.fas*
+   - List of matching sequences against the viral database : *testSequences.bx.vir.list*
+   - FASTA file of sequences matching the viral database : *testSequences.bx.vir.fas*
 
 d-chimer produces all the outputs in the repository where it was launched.
 
 
 ## 3. Installation
-### 3.1 Installation (recommended)
-Conda is the recommended and supported installation method for reproducible environments.
 
-1. Clone or download the d-chimer repository:
+### 3.1 Installation with Conda (Recommended)
 
-             git clone https://github.com/stirera/d-chimer_v1
+Conda is the recommended method for reproducible environments and handles all dependencies automatically.
+
+1. Clone the d-chimer repository:
+```bash
+git clone https://github.com/stirera/d-chimer_v1
+cd d-chimer_v1
+```
 
 2. Create and activate the conda environment:
+```bash
+conda env create -f environment.yml
+conda activate dchimer
+```
 
-   ```bash
-   conda env create -f environment.yml
-   conda activate dchimer
-   ```
+The dchimer command will be automatically available in your PATH.
 
-### 3.2 NCBI taxonomy data (manual step)
-d-chimer requires the taxonomic full lineage paths to complete its run correctly (see section 5.4). Download and prepare this data manually, then place the resulting file somewhere persistent (for example `~/db/taxonomy/`) and reference it from `d-chimer_config.yaml`.
+### 3.2 Installation with pip
+
+Alternatively, you can install using pip in an existing Python environment (Python ≥3.7):
+
+```bash
+pip install -e .
+```
+
+This installs the package in editable mode, allowing you to modify the code and test changes immediately.
+
+### 3.3 NCBI Taxonomy Data (Required Manual Step)
+
+d-chimer requires the NCBI taxonomic full lineage paths to complete its run correctly. Download and prepare this data, then configure the path in `dchimer_config.yaml`.
 
 1. Download the taxonomy dump:
-
-   ```bash
-   wget "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
-   ```
+```bash
+wget "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
+```
 
 2. Decompress it:
-
-   ```bash
-   tar xzf new_taxdump.tar.gz
-   ```
+```bash
+tar xzf new_taxdump.tar.gz
+```
 
 3. Create the tab-delimited file used by d-chimer:
+```bash
+cat fullnamelineage.dmp|sed "s/\s\+\|\s\+//g"|sed 's/\|//2g'|awk 'BEGIN{FS="|"}{print $1,$3,$4,$2}'|sed "s/\s/\t/g"|sort -k1,1 > fullnamelineage_taxid_sorted.dmp
+```
 
-   ```bash
-   cat fullnamelineage.dmp|sed "s/\\s\\+\\|\\s\\+//g"|sed 's/\\|//2g'|awk 'BEGIN{FS="|"}{print $1,$3,$4,$2}'|sed "s/\\s/\\t/g"|sort -k1,1 > fullnamelineage_taxid_sorted.dmp
-   ```
+4. Move `fullnamelineage_taxid_sorted.dmp` to your preferred location and update `add_taxo_parameters.tax_lineages_file` in `dchimer_config.yaml` with the full path.
 
-4. Move `fullnamelineage_taxid_sorted.dmp` to your chosen location and set `add_taxo_parameters.tax_lineages_file` in `d-chimer_config.yaml` to the full path.
+### 3.4 Configuration
 
-### 3.3 Legacy installation (deprecated)
-The legacy `INSTALL.sh` script is deprecated. It remains for historical reference, but the conda environment above is the recommended and supported method.
-
-Users can execute the `INSTALL.sh` bash script once this repo is cloned, to get d-chimer source code, the python libraries and custom data.
-#### 3.3.1 d-chimer code and python libraries : 
-- Clone or download the d-chimer repository.   
-
-             git clone https://github.com/stirera/d-chimer_v1
+d-chimer requires configuration through `dchimer_config.yaml`. Edit this file to set:
+- BLAST database paths
+- Number of threads for BLAST
+- E-value thresholds
+- Filtering parameters
+- Taxonomy lineage file path (see section 3.3)
 
 
 d-chimer depends on several python3 libraries and ncbi-BLAST and databases.
