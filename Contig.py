@@ -22,36 +22,56 @@ Author : Alix de Thoisy <alixdet@protonmail.com>
 """
 
 class Contig():
-    """This class corresponds to query contig object at the the end of blast.
-    It is associated with subjects as a table (see subject class)
-    It contains variables for subjects' filtering along the filtering variables
-    minDec and minBpLength.
-    Its most important methods are Contig.filter_subjects()
-    and Contig.get_uncovered_zones().
+    """
+    Represent a query sequence/contig and its BLAST hits for filtering.
+
+    This class manages a single contig query and all of its BLAST subject matches.
+    It handles filtering logic to select high-quality, non-overlapping alignments
+    based on minimum identity and length thresholds.
+
+    Attributes:
+        id: Contig/query sequence identifier
+        subject: List of Subject objects (matches to this contig)
+        minBpLength: Minimum alignment length threshold
+        minDec: Minimum number of identical bases in overlap threshold
+        selectedSubjects: Filtered list of best-hit subjects after processing
+        departs: Start coordinates of selected alignments
+        arrivees: End coordinates of selected alignments
+
+    Key Methods:
+        filter_subjects(): Perform filtering and select best hits
+        get_uncovered_zones(): Identify regions not covered by alignments
     """
 
     def __init__(self, id, minDec, minBpLength):
+        """
+        Initialize a Contig object.
+
+        Args:
+            id: Contig/query sequence identifier
+            minDec: Minimum number of identical bases required in overlaps (filter parameter)
+            minBpLength: Minimum alignment length in base pairs (filter parameter)
+        """
         self.id = id  # contig or query id
-        self.subject = []  # array of subject(s) (class subjects)
-        self.minBpLength = int(minBpLength)
-        '''staight from the user defined variable of the filter_main -l option
-        = minimum alignment length'''
-        self.minDec = int(minDec)
-        '''staight from the user defined variable of the filter_main -d option'''
-        self.selectedSubjects = []  # array of the subjects after filtration
+        self.subject = []  # array of subject(s) (class Subject)
+        self.minBpLength = int(minBpLength)  # minimum alignment length
+        self.minDec = int(minDec)  # minimum identical bases in overlaps
+        self.selectedSubjects = []  # array of subjects after filtering
         self.departs = []  # start coordinates of subjects
-        self.arrivees = []  # end of alignments of subjects
+        self.arrivees = []  # end coordinates of alignments
 
     def filter_subjects(self):
-        """This function produces the final set of subject retained
-        after filtering. It uses contig.build_stacks,
-        it builds a matrix of subjects with stacks,
-        overlapping, or single subjects.
-        Using the contig.select_besthit(), it chosees the best-hit
-        for each stack. It is called in in filter_blastn_lib.
-        It calls : Contig.sort_subjects_on_starting(), to first
-        sort subjects  on their starting coordiantes befiore starting
-        stacking procedure.
+        """
+        Filter and select best-hit subjects for this contig.
+
+        Processes all subject matches for this contig by:
+        1. Sorting subjects by starting coordinate
+        2. Building stacks of overlapping/adjacent alignments
+        3. Selecting the highest-quality hit from each stack
+        4. Removing redundant/low-quality matches
+
+        Returns:
+            None (modifies self.selectedSubjects in place)
         """
         new_subjects = self.sort_subjects_on_starting(self.subject)
 
