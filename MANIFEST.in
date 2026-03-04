@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include dchimer_config.yaml
+include add_taxo.sh
+include environment.yml
+include setup.py
+recursive-include taxonomy *.dmp
