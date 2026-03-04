@@ -203,7 +203,13 @@ def taxo_postprocess(program, root, cpt, filt_type):
               os.remove(tsv)
 
           else:
-              subprocess.run(['/usr/bin/bash', path+'/add_taxo.sh',
+              # Find bash executable (portable across systems)
+              bash_path = shutil.which('bash')
+              if bash_path is None:
+                  logger.error("bash executable not found in PATH")
+                  raise FileNotFoundError("bash executable required but not found")
+              
+              subprocess.run([bash_path, path+'/add_taxo.sh',
                              tsv, taxlineages, blasttag], check=True)
               shutil.move(tsv, repertoire)
               shutil.move(tax, repertoire)
@@ -229,7 +235,13 @@ def taxo_postprocess(program, root, cpt, filt_type):
         os.remove(tsv)
 
       else:
-        subprocess.run(['/usr/bin/bash', path+'/add_taxo.sh',
+        # Find bash executable (portable across systems)
+        bash_path = shutil.which('bash')
+        if bash_path is None:
+            logger.error("bash executable not found in PATH")
+            raise FileNotFoundError("bash executable required but not found")
+        
+        subprocess.run([bash_path, path+'/add_taxo.sh',
                         tsv, taxlineages, blasttag], check=True)
         shutil.move(tsv, repertoire)
         shutil.move(tax, repertoire)
