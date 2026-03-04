@@ -26,6 +26,13 @@ import os
 import sys
 
 from .dchimer_methods import call_blastx_and_filter, call_blastn_and_filter
+from .dchimer_logging import setup_logging, get_logger
+from .dchimer_config_validator import (
+    load_and_validate_config,
+    validate_database_paths,
+    validate_blast_executable
+)
+from .dchimer_input_validator import validate_fasta_file
 
 import argparse
 
@@ -79,44 +86,93 @@ def opts_and_args():
 
 
 def main():
-    """Recursive process (implemented in call_blast(n/x)_and_filter
-    functions) which calls a blast program, filters its
-    outputs until max_loops number of cycles reached or process ends
+    """Main entry point for d-chimer pipeline.
+    
+    Validates configuration and input, then runs BLAST and filtering
+    until max_loops cycles reached or process completes.
     """
-    args = opts_and_args()
+    # Initialize logging
+    logger = setup_logging()
+    logger.info("Starting d-chimer pipeline")
 
-    program = args.blastprogram
-    local = args.local
-    qfile = args.fastafile
+    try:
+        # Parse arguments
+        args = opts_and_args()
 
-    cpt = 0
-    cpt_max = args.max_loops
+        program = args.blastprogram
+        local = args.local
+        qfile = args.fastafile
+        cpt = 0
+        cpt_max = args.max_loops
 
-    root = args.fastafile.split(".")
+        # Validate program type
+        if program not in ['blastn', 'blastx']:
+            logger.error(f"Invalid BLAST program: {program}")
+            logger.error("Allowed values: blastn or blastx")
+            sys.exit(1)
 
-    if program == 'blastn':
-        repertoire = root[0] + "_bn_out"
+        logger.info(f"BLAST program: {program}")
+        logger.info(f"Local BLAST: {local}")
+        logger.info(f"Input file: {qfile}")
+        logger.info(f"Maximum cycles: {cpt_max}")
 
-        if os. path. isdir(repertoire):
+        # Load and validate configuration
+        logger.info("Validating configuration...")
+        config_path = os.path.join(
+            os.path.dirname(__file__),
+            "dchimer_config.yaml"
+        )
+        config = load_and_validate_config(config_path)
+        logger.info("Configuration loaded successfully")
 
-            sys.exit('ERROR : BLASTn output directory exists : ' +
-                     repertoire +
-                     '\n\n' + 'Please remove it before'+'\n')
+        # Validate database paths
+        logger.info("Validating database paths...")
+        validate_database_paths(config)
+        logger.info("Database paths validated")
 
-        call_blastn_and_filter(program, local, qfile, cpt, cpt_max)
-    elif program == 'blastx':
-        repertoire = root[0] + "_bx_out"
+        # Validate BLAST executables if using local BLAST
+        if local:
+            logger.info("Validating BLAST installation...")
+            validate_blast_executable(config['blast_path'])
+            logger.info("BLAST installation validated")
 
-        if os. path. isdir(repertoire):
+        # Validate input FASTA file
+        logger.info(f"Validating input FASTA file: {qfile}")
+        num_seqs, file_size = validate_fasta_file(qfile)
+        logger.info(f"Input file valid: {num_seqs} sequences, {file_size:.2f} KB")
 
-            sys.exit('ERROR : BLASTx output directory exists : ' +
-                     repertoire +
-                     '\n\n' + 'Please remove it before'+'\n')
+        # Check output directory doesn't already exist
+        root = qfile.split(".")
+        if program == 'blastn':
+            output_dir = root[0] + "_bn_out"
+        else:
+            output_dir = root[0] + "_bx_out"
 
-        call_blastx_and_filter(program, local, qfile, cpt, cpt_max)
-    else :
-        sys.exit('ERROR : unknown blast program ! ' +
-                 'allowed values are : \n\tblastn or blastx')
+        if os.path.isdir(output_dir):
+            logger.error(f"Output directory already exists: {output_dir}")
+            logger.error("Please remove it before running d-chimer")
+            sys.exit(1)
+
+        logger.info(f"Output directory: {output_dir}")
+        logger.info("All validation passed. Starting BLAST and filtering...")
+
+        # Run appropriate BLAST pipeline
+        if program == 'blastn':
+            call_blastn_and_filter(program, local, qfile, cpt, cpt_max)
+        else:  # blastx
+            call_blastx_and_filter(program, local, qfile, cpt, cpt_max)
+
+        logger.info("d-chimer pipeline completed successfully")
+
+    except (FileNotFoundError, PermissionError, ValueError) as e:
+        logger.error(f"Validation error: {e}")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        logger.warning("Pipeline interrupted by user")
+        sys.exit(130)
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}", exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
